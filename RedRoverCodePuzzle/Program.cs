@@ -1,151 +1,72 @@
 using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace RedRoverCodePuzzle
 {
     internal class Program
     {
-        public struct TypeField
-        {
-            public string id;
-            public string name;
-            public List<string> customeFields;
-        }
-
-        public struct Result
-        {
-            public string id;
-            public string name;
-            public string email;
-            public TypeField type;
-            public string externalId;
-        }
-
         public static void Main(string[] args)
         {
+            while (true)
+            {
+                Console.WriteLine("Type your string to convert. Type 'exit' to quit.");
+                Console.Write("> ");
+                
+                string input = Console.ReadLine();
 
-            //var input = "(id, name, email, type(id, name, customFields(c1, c2, c3)), externalId)";
+                // Check for exit condition (case-insensitive)
+                if (string.Equals(input, "exit", StringComparison.OrdinalIgnoreCase))
+                {
+                    break; // Exits the while loop
+                }
 
-            var input = Console.ReadLine();
+                ConvertStringToOutput1(input);
+            }
 
-            // use this pattern if we are requiring the input to be exactly the same string
-            // var nullableResult = UseRegExpressionExactStringPatternToBuildResult(input);
+            Console.WriteLine("Loop ended.");
+        }
 
-
-            // use if we are expecting the input to respect the order
-            var nullableResult = UseRegExpressionExactOrderPatternToBuildResult(input);
-
-            if (nullableResult == null)
+        private static void ConvertStringToOutput1(string input)
+        {
+            if (string.IsNullOrEmpty(input) || !input.StartsWith("(") || !input.EndsWith(")"))
             {
                 Console.WriteLine("Invalid input");
                 return;
             }
 
-            var result = nullableResult.Value;
-            // output 1
-            Console.WriteLine("- " + result.id);
-            Console.WriteLine("- " + result.name);
-            Console.WriteLine("- " + result.email);
-            Console.WriteLine("- " + "type");
-            Console.WriteLine(" - " + result.type.id);
-            Console.WriteLine(" - " + result.type.name);
-            Console.WriteLine(" - " + "customFields");
-            foreach (var c in result.type.customeFields)
+            var numOfOpenParen = input.Count(c => c == '(');
+            var numOfCloseParen = input.Count(c => c == ')');
+            if (numOfOpenParen != numOfCloseParen)
             {
-                Console.WriteLine("  - " + c);
+                Console.WriteLine("Invalid input");
+                return;
             }
 
-            Console.WriteLine("- " + result.externalId);
-
-            Console.WriteLine();
-            Console.WriteLine();
-
-            // output 2
-            Console.WriteLine("- " + result.email);
-            Console.WriteLine("- " + result.externalId);
-            Console.WriteLine("- " + result.id);
-            Console.WriteLine("- " + result.name);
-            Console.WriteLine("- " + "type");
-            Console.WriteLine(" - " + "customFields");
-            foreach (var c in result.type.customeFields)
+            var depth = -1;
+            foreach (var c in input)
             {
-                Console.WriteLine("  - " + c);
-            }
-
-            Console.WriteLine(" - " + result.type.id);
-            Console.WriteLine(" - " + result.type.name);
-        }
-
-
-        public static Result? UseRegExpressionExactStringPatternToBuildResult(string input)
-        {
-            string extactStringPattern =
-                @"\(id, name, email, type\(id, name, customFields\(c1, c2, c3\)\), externalId\)";
-            var exactMatch = Regex.Match(input, extactStringPattern);
-
-            if (!exactMatch.Success)
-            {
-                return null;
-            }
-
-            var result = new Result()
-            {
-                id = "id",
-                name = "name",
-                email = "email",
-                type = new TypeField()
+                if (c == '(')
                 {
-                    id = "id",
-                    name = "name",
-                    customeFields = new List<string>()
-                    {
-                        "c1",
-                        "c2",
-                        "c3",
-                    }
-
-                },
-                externalId = "externalId",
-            };
-
-            return result;
-
-        }
-
-        public static Result? UseRegExpressionExactOrderPatternToBuildResult(string input)
-        {
-            string extactOrderPattern =
-                @"\((id), (name), (email), type\((id), (name), customFields\((c1), (c2), (c3)\)\), (externalId)\)";
-            var extactOrderMatch = Regex.Match(input, extactOrderPattern);
-            if (!extactOrderMatch.Success)
-            {
-                return null;
-            }
-
-            var result = new Result()
-            {
-                id = extactOrderMatch.Groups[1].Value,
-                name = extactOrderMatch.Groups[2].Value,
-                email = extactOrderMatch.Groups[3].Value,
-                type = new TypeField()
+                    depth++;
+                    Console.Write("\n" + new string(' ', depth) + "- ");
+                }
+                else if (c == ')')
                 {
-                    id = extactOrderMatch.Groups[4].Value,
-                    name = extactOrderMatch.Groups[5].Value,
-                    customeFields = new List<string>()
-                    {
-                        extactOrderMatch.Groups[6].Value,
-                        extactOrderMatch.Groups[7].Value,
-                        extactOrderMatch.Groups[8].Value,
-                    }
-
-                },
-                externalId = extactOrderMatch.Groups[9].Value
-            };
-
-            return result;
+                    depth--;
+                }
+                else if (c == ',')
+                {
+                    Console.Write("\n" + new string(' ', depth) + "- ");
+                }
+                else if(c != ' ' )
+                {
+                    Console.Write(c);
+                }
+            }
+            
+            Console.Write("\n\n");
         }
-
+            
     }
 }
     

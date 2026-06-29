@@ -10,9 +10,9 @@ namespace RedRoverCodePuzzle
         {
             while (true)
             {
-                Console.WriteLine("Type your string to convert. Type 'exit' to quit.");
+                Console.WriteLine("\nType your string to convert. Type 'exit' to quit.");
                 Console.Write("> ");
-                
+
                 string input = Console.ReadLine();
 
                 // Check for exit condition (case-insensitive)
@@ -26,6 +26,7 @@ namespace RedRoverCodePuzzle
                     Console.WriteLine("Invalid input");
                     //return;
                 }
+
                 var numOfOpenParen = input.Count(c => c == '(');
                 var numOfCloseParen = input.Count(c => c == ')');
                 if (numOfOpenParen != numOfCloseParen)
@@ -33,11 +34,16 @@ namespace RedRoverCodePuzzle
                     Console.WriteLine("Invalid input");
                     //return;
                 }
+
+                //ConvertStringToOutput1(input);
+
+                var rootNode = ProcessRootNode(input);
                 
-                ConvertStringToOutput1(input);
+                Console.WriteLine("\nOutput 1");
+                PrintTreeOutput1(rootNode, 0);
                 
-                //var node = ConvertStringToTree(input);
-                
+                Console.WriteLine("\nOutput 2");
+                PrintTreeOutput2(rootNode, 0);
             }
 
             Console.WriteLine("Loop ended.");
@@ -75,86 +81,113 @@ namespace RedRoverCodePuzzle
                 {
                     Console.Write("\n" + new string(' ', depth) + "- ");
                 }
-                else if(c != ' ' )
+                else if (c != ' ')
                 {
                     Console.Write(c);
                 }
             }
-            
+
             Console.Write("\n\n");
         }
-        
+
         public class Node
         {
             public string Name { get; set; }
             public List<Node> Children { get; set; }
         }
-        
-        private static Node ConvertStringToTree(string input)
+
+        private static Node ProcessRootNode(string input)
         {
-            // Stack holds references to the list hierarchy
-            var stack = new Stack<List<Node>>();
-            var currentNodeName = "";
-            
-            var root = new Node() {Name = "root"};
-            var currentParent = root;
-            var currentList = new List<Node>();
-            root.Children = currentList;
-            stack.Push(currentList);
-            input = input.Remove(0,1);
-            
-            foreach (var c in input)
-            {
-                // we already have the root node
-                if (c == '(')
-                {
-                    if (!string.IsNullOrEmpty(currentNodeName))
-                    {
-                        var node = new Node() { Name = currentNodeName };
-                        currentList.Add(node);
-                        currentNodeName = "";
-                        currentParent = node;
-                        // Create a new child list level
-                        currentList = new List<Node>();
-                        currentParent.Children = currentList;
-                        stack.Push(currentList);
-                    }
-                }
-                else if (c == ')')
-                {
-                    //add the last node 
-                    if (!string.IsNullOrEmpty(currentNodeName))
-                    {
-                        var node = new Node() { Name = currentNodeName };
-                        currentList.Add(node);
-                        currentNodeName = "";
-                    }
-                    // Return back to the parent list context
-                    if (stack.Count > 0)
-                    {
-                        currentList = stack.Pop();
-                    }
-                }
-                // end of a field
-                else if (c == ',')
-                {
-                    if (!string.IsNullOrEmpty(currentNodeName))
-                    {
-                        var node = new Node() { Name = currentNodeName };
-                        currentList.Add(node);
-                        currentNodeName = "";
-                    }
-                }
-                else if(c != ' ' )
-                {
-                    currentNodeName += c;
-                }
-            }
-            
+            var root = new Node() { Name = "root" };
+
+            int index = 1;
+            root.Children = ProcessChildren(input, ref index);
             return root;
         }
 
+        private static List<Node> ProcessChildren(string input, ref int index)
+        {
+            if (index == input.Length) return new List<Node>();
+
+            string name = "";
+            var list = new List<Node>();
+            while (index < input.Length)
+            {
+                var c = input[index];
+                if (c == '(')
+                {
+                    var node = new Node() { Name = name };
+                    list.Add(node);
+                    name = "";
+                    index++;
+                    node.Children = ProcessChildren(input, ref index);
+                }
+                else if (c == ')')
+                {
+                    var node = new Node() { Name = name };
+                    list.Add(node);
+                    name = "";
+                    index++;
+                    return list;
+                }
+
+                // end of a field
+                else if (c == ',')
+                {
+                    var node = new Node() { Name = name };
+                    list.Add(node);
+                    name = "";
+                }
+                else if (c != ' ')
+                {
+                    name += c;
+                }
+
+                index++;
+
+            }
+
+            return list;
+        }
+
+        private static void PrintTreeOutput1(Node node, int depth)
+        {
+            if (node.Name != "root")
+                Console.WriteLine(new string(' ', depth) + "- " + node.Name);
             
+            if (node.Children != null && node.Children.Count > 0)
+            {
+                depth++;
+                foreach (var childNode in node.Children)
+                {
+                    PrintTreeOutput1(childNode, depth);
+                }
+            }
+        }
+        
+        private static void PrintTreeOutput2(Node node, int depth)
+        {
+            if (node.Name != "root")
+                Console.WriteLine(new string(' ', depth) + "- " + node.Name);
+            
+            if (node.Children != null && node.Children.Count > 0)
+            {
+                depth++;
+                // print not nested nodes first
+                var simpleNodes =
+                    node.Children.Where(c => c.Children == null || c.Children.Count == 0);
+                foreach (var childNode in simpleNodes)
+                {
+                    PrintTreeOutput2(childNode, depth);
+                }
+                var nestedNodes =
+                    node.Children.Where(c => c.Children != null && c.Children.Count > 0);
+                foreach (var childNode in nestedNodes)
+                {
+                    PrintTreeOutput2(childNode, depth);
+                }
+            }
+        }
     }
 }
     

@@ -1,63 +1,52 @@
 # RedRoverCodePuzzle
 
-`RedRoverCodePuzzle` is a small C# console application that runs in a loop, accepts nested, comma-separated text from standard input, and prints it back as an indented outline.
+`RedRoverCodePuzzle` is a C# console application that reads a parenthesized, comma-separated string from standard input and converts it into a tree of node names.
 
-## What it does
+## Project
 
-The program:
+- Console app
+- Target framework: .NET Framework 4.8.1
+- Entry point: `RedRoverCodePuzzle/Program.cs`
 
-1. Prints a prompt on each iteration.
-2. Reads one line from `Console.ReadLine()`.
-3. Exits when the user types `exit` in any case, such as `exit` or `EXIT`.
-4. Rejects empty input.
-5. Rejects input that does not start with `(` and end with `)`.
-6. Rejects input where the number of opening and closing parentheses does not match.
-7. Walks the string character by character and prints each token on its own line with indentation based on parenthesis depth.
+## Input format
 
-Spaces are ignored. Commas become line breaks. The output uses `- ` markers to show structure. After a valid conversion, the app prints a blank line before the next prompt.
-
-Example input:
+The parser expects input in this shape:
 
 ```text
-(id, name, email, type(id, name, customFields(c1, c2, c3)), externalId)
+(a,b,c)
 ```
 
-Example output shape:
+Nested groups are also supported by the current parser shape:
 
 ```text
-- id
-- name
-- email
-- type
- - id
- - name
- - customFields
-  - c1
-  - c2
-  - c3
-- externalId
+(a,b,(c,d),e)
 ```
 
-## Project layout
+Spaces are ignored.
 
-- `RedRoverCodePuzzle/Program.cs` - entry point and formatting logic
-- `RedRoverCodePuzzle/RedRoverCodePuzzle.csproj` - .NET Framework project file
+## Runtime behavior
 
-## Requirements
+On each loop iteration the app:
 
-- Visual Studio 2019 or later, or the .NET Framework 4.8.1 build tools
-- .NET Framework 4.8.1
+1. Prompts for a string.
+2. Exits when the user types `exit` in any casing.
+3. Rejects input that is empty, does not start with `(`, or does not end with `)`.
+4. Rejects input when the number of opening and closing parentheses does not match.
+5. Builds a `Node` tree and prints it.
+
+If input fails validation, the app prints `Invalid input`.
 
 ## Build
 
-Open the solution in Visual Studio and build the `RedRoverCodePuzzle` project.
+Open `RedRoverCodePuzzle.sln` in Visual Studio and build the solution.
 
 ## Run
 
-Run the console app and provide the input on standard input. Type `exit` to quit:
+Run the console app and enter a string at the prompt. Type `exit` to quit.
+
+Example:
 
 ```text
-(id, name, email, type(id, name, customFields(c1, c2, c3)), externalId)
+(id,name,email,type(id,name,customFields(c1,c2,c3)),externalId)
 ```
 
-If the input fails validation, the app prints `Invalid input`. When the loop ends, the app prints `Loop ended.`
